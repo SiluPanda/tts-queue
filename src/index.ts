@@ -9,5 +9,7 @@ export {
   TTSQueueError, synthError, playbackError, splittingError, internalError,
 } from './errors';
 export type { TTSQueueStage } from './errors';
-// createQueue, createCallbackSink, createBufferSink, createStreamSink,
-// createMockProvider, createMockSink — to be implemented in later phases
+export { createQueue } from './queue';
+export { splitSentences } from './splitter';
+export type { SplitOptions } from './splitter';
+export { createSegment, transitionSegment } from './segment';
