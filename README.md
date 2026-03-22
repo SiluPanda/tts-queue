@@ -3,6 +3,7 @@
 TTS audio streaming manager with sentence-boundary queuing, gapless playback, and fast interruption handling.
 
 [![npm version](https://img.shields.io/npm/v/tts-queue.svg)](https://www.npmjs.com/package/tts-queue)
+[![npm downloads](https://img.shields.io/npm/dt/tts-queue.svg)](https://www.npmjs.com/package/tts-queue)
 [![license](https://img.shields.io/npm/l/tts-queue.svg)](https://github.com/SiluPanda/tts-queue/blob/master/LICENSE)
 [![node](https://img.shields.io/node/v/tts-queue.svg)](https://nodejs.org)
 [![types](https://img.shields.io/npm/types/tts-queue.svg)](https://www.npmjs.com/package/tts-queue)

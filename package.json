@@ -1,6 +1,6 @@
 {
   "name": "tts-queue",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "TTS audio streaming manager with sentence-boundary queuing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
