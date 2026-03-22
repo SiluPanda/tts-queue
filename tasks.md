@@ -6,49 +6,49 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 1: Project Scaffolding and Type Definitions
 
-- [ ] **Install dev dependencies** — Add `typescript` (^5.0), `vitest` (^1.0), and `eslint` (^8.0) as dev dependencies in `package.json`. Verify `npm run build`, `npm run test`, and `npm run lint` scripts are functional with the installed tooling. | Status: not_done
+- [x] **Install dev dependencies** — Add `typescript` (^5.0), `vitest` (^1.0), and `eslint` (^8.0) as dev dependencies in `package.json`. Verify `npm run build`, `npm run test`, and `npm run lint` scripts are functional with the installed tooling. | Status: done
 
-- [ ] **Create `src/types.ts` -- Core interfaces** — Define all core TypeScript interfaces and types: `TTSProvider`, `AudioSink`, `AudioData`, `AudioChunk`, `AudioFormat`, `QueueOptions`, `SplittingOptions`, `TTSQueue`, `SegmentInfo`, `SegmentState`, `QueueState`, `QueueStats`, `CancelResult`, `TTSQueueError`, and `TTSQueueEvents`. These must exactly match the type definitions in spec sections 7, 8, 9, 12, and 14. | Status: not_done
+- [x] **Create `src/types.ts` -- Core interfaces** — Define all core TypeScript interfaces and types: `TTSProvider`, `AudioSink`, `AudioData`, `AudioChunk`, `AudioFormat`, `QueueOptions`, `SplittingOptions`, `TTSQueue`, `SegmentInfo`, `SegmentState`, `QueueState`, `QueueStats`, `CancelResult`, `TTSQueueError`, and `TTSQueueEvents`. These must exactly match the type definitions in spec sections 7, 8, 9, 12, and 14. | Status: done
 
-- [ ] **Create `src/errors.ts` -- Error types and utilities** — Implement the `TTSQueueError` class with fields: `stage` (`'synthesis' | 'playback' | 'splitting' | 'internal'`), `cause` (Error), `message` (string), and optional `segment` (SegmentInfo). Provide factory functions for creating errors at each stage. | Status: not_done
+- [x] **Create `src/errors.ts` -- Error types and utilities** — Implement the `TTSQueueError` class with fields: `stage` (`'synthesis' | 'playback' | 'splitting' | 'internal'`), `cause` (Error), `message` (string), and optional `segment` (SegmentInfo). Provide factory functions for creating errors at each stage. | Status: done
 
-- [ ] **Create `src/index.ts` -- Public API barrel export** — Export `createQueue`, all type definitions, sink factory functions (`createCallbackSink`, `createBufferSink`, `createStreamSink`), and test utilities (`createMockProvider`, `createMockSink` from `tts-queue/test`). This is the single entry point for the package. | Status: not_done
+- [x] **Create `src/index.ts` -- Public API barrel export** — Export `createQueue`, all type definitions, sink factory functions (`createCallbackSink`, `createBufferSink`, `createStreamSink`), and test utilities (`createMockProvider`, `createMockSink` from `tts-queue/test`). This is the single entry point for the package. | Status: done
 
 ---
 
 ## Phase 2: Segment Lifecycle
 
-- [ ] **Create `src/segment.ts` -- Segment class** — Implement the `Segment` class representing a single unit of text-to-audio work. Fields: `index` (0-based), `text` (source string), `state` (SegmentState), `audioData` (Uint8Array or null), `durationMs` (number or null), `abortController` (AbortController or null). | Status: not_done
+- [x] **Create `src/segment.ts` -- Segment class** — Implement the `Segment` class representing a single unit of text-to-audio work. Fields: `index` (0-based), `text` (source string), `state` (SegmentState), `audioData` (Uint8Array or null), `durationMs` (number or null), `abortController` (AbortController or null). | Status: done
 
-- [ ] **Implement segment state transitions** — Enforce the valid state transition graph: `pending -> generating -> ready -> playing -> done`, and `pending|generating|ready|playing -> cancelled` (via cancel). Throw an internal error on invalid transitions. | Status: not_done
+- [x] **Implement segment state transitions** — Enforce the valid state transition graph: `pending -> generating -> ready -> playing -> done`, and `pending|generating|ready|playing -> cancelled` (via cancel). Throw an internal error on invalid transitions. | Status: done
 
 - [ ] **Implement segment timing tracking** — Track timestamps for each lifecycle event on the segment: `synthesisStartedAt`, `firstAudioChunkAt`, `synthesisCompletedAt`, `playbackStartedAt`, `playbackEndedAt`. Compute `synthesisLatencyMs` as the delta between `synthesisStartedAt` and `firstAudioChunkAt`. | Status: not_done
 
 - [ ] **Implement segment audio data management** — Allow appending audio chunks (for streaming providers) and setting complete audio buffers (for batch providers). Support releasing audio data after playback when `retainAudio` is false. | Status: not_done
 
-- [ ] **Implement `toSegmentInfo()` method** — Return a `SegmentInfo` object from the segment's current state: `index`, `text`, `state`, `durationMs`, `synthesisLatencyMs`. | Status: not_done
+- [x] **Implement `toSegmentInfo()` method** — Return a `SegmentInfo` object from the segment's current state: `index`, `text`, `state`, `durationMs`, `synthesisLatencyMs`. | Status: done
 
 ---
 
 ## Phase 3: Sentence Splitting
 
-- [ ] **Create `src/splitter.ts` -- Built-in sentence splitter** — Implement `splitSentences(text: string, options: SplittingOptions): string[]` that splits text into sentence-sized segments using heuristic rules. | Status: not_done
+- [x] **Create `src/splitter.ts` -- Built-in sentence splitter** — Implement `splitSentences(text: string, options: SplittingOptions): string[]` that splits text into sentence-sized segments using heuristic rules. | Status: done
 
-- [ ] **Implement primary boundary detection** — Detect sentence boundaries at period (`.`), question mark (`?`), and exclamation mark (`!`) followed by whitespace or end-of-string. | Status: not_done
+- [x] **Implement primary boundary detection** — Detect sentence boundaries at period (`.`), question mark (`?`), and exclamation mark (`!`) followed by whitespace or end-of-string. | Status: done
 
 - [ ] **Implement abbreviation handling** — Maintain a default abbreviation list: `Dr.`, `Mr.`, `Mrs.`, `Ms.`, `Prof.`, `U.S.`, `U.K.`, `St.`, `Jr.`, `Sr.`, `vs.`, `etc.`, `i.e.`, `e.g.`. Periods after these abbreviations must NOT be treated as sentence boundaries. Support additional user-provided abbreviations via `SplittingOptions.abbreviations`. | Status: not_done
 
-- [ ] **Implement decimal number handling** — Periods within decimal numbers (e.g., `98.6`, `3.14`, `$99.99`) must not be treated as sentence boundaries. Detect digit-period-digit patterns. | Status: not_done
+- [x] **Implement decimal number handling** — Periods within decimal numbers (e.g., `98.6`, `3.14`, `$99.99`) must not be treated as sentence boundaries. Detect digit-period-digit patterns. | Status: done
 
-- [ ] **Implement ellipsis handling** — Three consecutive periods (`...`) must not be treated as a sentence boundary. | Status: not_done
+- [x] **Implement ellipsis handling** — Three consecutive periods (`...`) must not be treated as a sentence boundary. | Status: done
 
-- [ ] **Implement URL and email handling** — Periods within URLs (e.g., `example.com`) and email addresses must not be treated as sentence boundaries. | Status: not_done
+- [x] **Implement URL and email handling** — Periods within URLs (e.g., `example.com`) and email addresses must not be treated as sentence boundaries. | Status: done
 
-- [ ] **Implement long sentence fallback (clause-boundary splitting)** — When a sentence exceeds `maxSegmentLength` (default 200 chars), split at clause boundaries in priority order: (1) semicolon + whitespace, (2) colon + whitespace (not within time expressions), (3) em dash (`" -- "` or `"\u2014"`), (4) comma + whitespace (only if both resulting segments meet `minSegmentLength`). | Status: not_done
+- [x] **Implement long sentence fallback (clause-boundary splitting)** — When a sentence exceeds `maxSegmentLength` (default 200 chars), split at clause boundaries in priority order: (1) semicolon + whitespace, (2) colon + whitespace (not within time expressions), (3) em dash (`" -- "` or `"\u2014"`), (4) comma + whitespace (only if both resulting segments meet `minSegmentLength`). | Status: done
 
 - [ ] **Implement short segment merging** — When a segment is shorter than `minSegmentLength` (default 10 chars), merge it with the next segment. If it is the last segment, send as-is. | Status: not_done
 
-- [ ] **Implement custom splitter override** — When `SplittingOptions.splitSentences` is provided, use it instead of the built-in splitter. Pass the full text string and use the returned string array as segments. | Status: not_done
+- [x] **Implement custom splitter override** — When `SplittingOptions.splitSentences` is provided, use it instead of the built-in splitter. Pass the full text string and use the returned string array as segments. | Status: done
 
 - [ ] **Implement streaming sentence aggregation** — Create a `StreamingSplitter` class that accumulates tokens into a buffer and emits complete sentences. Algorithm: append each token, scan for boundary markers, use one-token lookahead for ambiguous periods (wait for next token to confirm), emit completed sentences, flush remaining buffer when stream ends. Apply the same long-sentence fallback and short-segment merging rules. | Status: not_done
 
@@ -56,25 +56,25 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 4: Core Queue State Machine
 
-- [ ] **Create `src/queue.ts` -- TTSQueue class** — Implement the `TTSQueue` class that manages the four-stage pipeline: text ingestion, TTS generation, playback queue, and audio output. Extend Node.js `EventEmitter` for typed event emission. | Status: not_done
+- [x] **Create `src/queue.ts` -- TTSQueue class** — Implement the `TTSQueue` class that manages the four-stage pipeline: text ingestion, TTS generation, playback queue, and audio output. Extend Node.js `EventEmitter` for typed event emission. | Status: done
 
-- [ ] **Implement queue state management** — Track the four queue states: `idle`, `playing`, `paused`, `draining`. Implement `getState(): QueueState`. Emit `stateChange(from, to)` events on every transition. | Status: not_done
+- [x] **Implement queue state management** — Track the four queue states: `idle`, `playing`, `paused`, `draining`. Implement `getState(): QueueState`. Emit `stateChange(from, to)` events on every transition. | Status: done
 
-- [ ] **Implement queue state transitions** — Enforce valid transitions: `idle -> playing` (on enqueue/play), `playing -> paused` (on pause), `paused -> playing` (on resume), `playing -> draining` (on drain with input ended), `draining -> idle` (last segment done), `playing|paused|draining -> idle` (on cancel). | Status: not_done
+- [x] **Implement queue state transitions** — Enforce valid transitions: `idle -> playing` (on enqueue/play), `playing -> paused` (on pause), `paused -> playing` (on resume), `playing -> draining` (on drain with input ended), `draining -> idle` (last segment done), `playing|paused|draining -> idle` (on cancel). | Status: done
 
-- [ ] **Implement `enqueue(text: string): Promise<void>`** — Accept a complete text string. Split into sentences using the configured splitter. Create a `Segment` for each sentence in `pending` state. Append segments to the queue. Trigger the generation loop. Return a promise that resolves when segments are added (blocks if queue is at `maxQueueSize`). | Status: not_done
+- [x] **Implement `enqueue(text: string): Promise<void>`** — Accept a complete text string. Split into sentences using the configured splitter. Create a `Segment` for each sentence in `pending` state. Append segments to the queue. Trigger the generation loop. Return a promise that resolves when segments are added (blocks if queue is at `maxQueueSize`). | Status: done
 
 - [ ] **Implement `enqueueStream(stream): Promise<void>`** — Accept `AsyncIterable<string>` (raw tokens) or `AsyncIterable<{ content: string }>` (stream-tokens output). Detect the input type by checking the shape of yielded values. For raw tokens, use the streaming splitter. For stream-tokens output, extract `.content` directly. Create segments as sentences complete. Return a promise that resolves when the source stream ends. | Status: not_done
 
 - [ ] **Implement `play(): void`** — If the queue has segments in `ready` state, begin playing the first one. If the queue is empty, set a flag so playback begins automatically when the first segment becomes ready. Transition queue to `playing` state. | Status: not_done
 
-- [ ] **Implement `pause(): void`** — Suspend playback. Call `sink.pause()` if available. Transition queue to `paused` state. Pre-buffering continues (generation loop does NOT pause). | Status: not_done
+- [x] **Implement `pause(): void`** — Suspend playback. Call `sink.pause()` if available. Transition queue to `paused` state. Pre-buffering continues (generation loop does NOT pause). | Status: done
 
-- [ ] **Implement `resume(): void`** — Resume playback after pause. Call `sink.resume()` if available. Transition queue to `playing` state. | Status: not_done
+- [x] **Implement `resume(): void`** — Resume playback after pause. Call `sink.resume()` if available. Transition queue to `playing` state. | Status: done
 
-- [ ] **Implement `drain(): void`** — Signal that no more text will be enqueued. Transition to `draining` state. When the last segment finishes playing, emit `ended` and transition to `idle`. Without `drain()`, the queue waits indefinitely for more input after the last segment finishes. | Status: not_done
+- [x] **Implement `drain(): void`** — Signal that no more text will be enqueued. Transition to `draining` state. When the last segment finishes playing, emit `ended` and transition to `idle`. Without `drain()`, the queue waits indefinitely for more input after the last segment finishes. | Status: done
 
-- [ ] **Implement `getStats(): QueueStats`** — Return cumulative statistics: `totalSegments`, `completedSegments`, `cancelledSegments`, `failedSegments`, `totalPlaybackDurationMs`, `averageSynthesisLatencyMs`, `averageGapMs`, `bufferingCount`, `cancellationCount`. Track these values incrementally as segments progress through their lifecycle. | Status: not_done
+- [x] **Implement `getStats(): QueueStats`** — Return cumulative statistics: `totalSegments`, `completedSegments`, `cancelledSegments`, `failedSegments`, `totalPlaybackDurationMs`, `averageSynthesisLatencyMs`, `averageGapMs`, `bufferingCount`, `cancellationCount`. Track these values incrementally as segments progress through their lifecycle. | Status: done
 
 - [ ] **Implement `getCurrentSegment(): SegmentInfo | null`** — Return info about the currently playing segment, or null if nothing is playing. | Status: not_done
 
@@ -84,9 +84,9 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 - [ ] **Implement `setProvider(provider: TTSProvider): void`** — Replace the TTS provider at runtime. The new provider is used for all subsequent segments. Segments already in `generating` or `ready` state continue with the old provider. | Status: not_done
 
-- [ ] **Implement `destroy(): void`** — Cancel all activity, remove all event listeners, release all references. The queue must not be used after `destroy()`. | Status: not_done
+- [x] **Implement `destroy(): void`** — Cancel all activity, remove all event listeners, release all references. The queue must not be used after `destroy()`. | Status: done
 
-- [ ] **Implement typed event emission** — Emit all events defined in `TTSQueueEvents`: `playing`, `segmentStart(segment)`, `segmentEnd(segment)`, `ended`, `buffering`, `bufferingEnd`, `stateChange(from, to)`, `drain`, `error(error)`. Implement `on()` and `off()` with proper typing. | Status: not_done
+- [x] **Implement typed event emission** — Emit all events defined in `TTSQueueEvents`: `playing`, `segmentStart(segment)`, `segmentEnd(segment)`, `ended`, `buffering`, `bufferingEnd`, `stateChange(from, to)`, `drain`, `error(error)`. Implement `on()` and `off()` with proper typing. | Status: done
 
 - [ ] **Implement autoplay behavior** — When `autoplay` is true (default), begin playback automatically when the first segment becomes `ready`. When false, require an explicit `play()` call. | Status: not_done
 
@@ -136,7 +136,7 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 7: Interruption and Cancellation
 
-- [ ] **Implement `cancel(): CancelResult`** — Execute the full cancellation sequence within the <20ms target: (1) call `sink.stop()`, (2) abort all in-flight `AbortController` instances for segments in `generating` state, (3) transition all non-done segments (`pending`, `generating`, `ready`, `playing`) to `cancelled`, (4) record interruption metadata, (5) reset queue state to `idle`. | Status: not_done
+- [x] **Implement `cancel(): CancelResult`** — Execute the full cancellation sequence within the <20ms target: (1) call `sink.stop()`, (2) abort all in-flight `AbortController` instances for segments in `generating` state, (3) transition all non-done segments (`pending`, `generating`, `ready`, `playing`) to `cancelled`, (4) record interruption metadata, (5) reset queue state to `idle`. | Status: done
 
 - [ ] **Implement `CancelResult` construction** — Build and return the `CancelResult` object: `playingSegment` (text, index, progress if available), `pendingTexts` (texts of all queued-but-unplayed segments), `cancelledCount` (total segments cancelled). | Status: not_done
 
@@ -178,9 +178,9 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 11: Queue Statistics
 
-- [ ] **Implement cumulative stats tracking** — Track `totalSegments`, `completedSegments`, `cancelledSegments`, `failedSegments` as segments progress through their lifecycle. Increment counters on each relevant state transition. | Status: not_done
+- [x] **Implement cumulative stats tracking** — Track `totalSegments`, `completedSegments`, `cancelledSegments`, `failedSegments` as segments progress through their lifecycle. Increment counters on each relevant state transition. | Status: done
 
-- [ ] **Implement `totalPlaybackDurationMs` tracking** — Sum the `durationMs` of all segments that reach `done` state. | Status: not_done
+- [x] **Implement `totalPlaybackDurationMs` tracking** — Sum the `durationMs` of all segments that reach `done` state. | Status: done
 
 - [ ] **Implement `averageSynthesisLatencyMs` tracking** — Compute the running average of `synthesisLatencyMs` across all segments that completed synthesis (time from synthesis request to first audio chunk). | Status: not_done
 
@@ -202,11 +202,11 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 13: Error Handling
 
-- [ ] **Implement TTS synthesis error handling** — When `TTSProvider.synthesize()` throws or rejects, transition the segment to `cancelled`, emit an `error` event with `stage: 'synthesis'`, and advance to the next segment. The queue must not enter a stuck state. | Status: not_done
+- [x] **Implement TTS synthesis error handling** — When `TTSProvider.synthesize()` throws or rejects, transition the segment to `cancelled`, emit an `error` event with `stage: 'synthesis'`, and advance to the next segment. The queue must not enter a stuck state. | Status: done
 
 - [ ] **Implement TTS empty audio handling** — When a provider returns an empty audio buffer (zero bytes), transition the segment to `done` (zero-duration), emit a warning via `error` event, and advance immediately to the next segment. | Status: not_done
 
-- [ ] **Implement sink write error handling** — When `sink.write()` throws, transition the current segment to `cancelled`, emit an `error` event with `stage: 'playback'`, and advance to the next segment. | Status: not_done
+- [x] **Implement sink write error handling** — When `sink.write()` throws, transition the current segment to `cancelled`, emit an `error` event with `stage: 'playback'`, and advance to the next segment. | Status: done
 
 - [ ] **Implement source stream error handling** — When the async iterable passed to `enqueueStream()` throws, emit an `error` event with `stage: 'splitting'`. Segments already enqueued continue playing normally. No new segments are added. | Status: not_done
 
@@ -226,23 +226,23 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 15: Unit Tests -- Sentence Splitter
 
-- [ ] **Test basic sentence splitting** — Period, question mark, and exclamation mark followed by whitespace or end-of-string produce correct splits. E.g., `"Hello. World"` -> `["Hello.", "World"]`. | Status: not_done
+- [x] **Test basic sentence splitting** — Period, question mark, and exclamation mark followed by whitespace or end-of-string produce correct splits. E.g., `"Hello. World"` -> `["Hello.", "World"]`. | Status: done
 
-- [ ] **Test abbreviation handling** — Periods after `Dr.`, `Mr.`, `Mrs.`, `Ms.`, `Prof.`, `U.S.`, `U.K.`, `St.`, `Jr.`, `Sr.`, `vs.`, `etc.`, `i.e.`, `e.g.` are NOT treated as sentence boundaries. | Status: not_done
+- [x] **Test abbreviation handling** — Periods after `Dr.`, `Mr.`, `Mrs.`, `Ms.`, `Prof.`, `U.S.`, `U.K.`, `St.`, `Jr.`, `Sr.`, `vs.`, `etc.`, `i.e.`, `e.g.` are NOT treated as sentence boundaries. | Status: done
 
-- [ ] **Test decimal number handling** — `"The temperature is 98.6 degrees."` is not split at `98.6`. | Status: not_done
+- [x] **Test decimal number handling** — `"The temperature is 98.6 degrees."` is not split at `98.6`. | Status: done
 
-- [ ] **Test ellipsis handling** — `"Well... I'm not sure."` is not split at `...`. | Status: not_done
+- [x] **Test ellipsis handling** — `"Well... I'm not sure."` is not split at `...`. | Status: done
 
 - [ ] **Test URL and email handling** — `"Visit example.com for details."` is not split at `example.com`. | Status: not_done
 
-- [ ] **Test minimum segment length merging** — Segments shorter than `minSegmentLength` (default 10) are merged with the next segment. | Status: not_done
+- [x] **Test minimum segment length merging** — Segments shorter than `minSegmentLength` (default 10) are merged with the next segment. | Status: done
 
-- [ ] **Test maximum segment length splitting** — Sentences exceeding `maxSegmentLength` (default 200) are split at clause boundaries (semicolon, colon, em dash, comma). | Status: not_done
+- [x] **Test maximum segment length splitting** — Sentences exceeding `maxSegmentLength` (default 200) are split at clause boundaries (semicolon, colon, em dash, comma). | Status: done
 
-- [ ] **Test empty string input** — `""` returns an empty array. | Status: not_done
+- [x] **Test empty string input** — `""` returns an empty array. | Status: done
 
-- [ ] **Test single sentence (no boundaries)** — `"Hello world"` returns `["Hello world"]`. | Status: not_done
+- [x] **Test single sentence (no boundaries)** — `"Hello world"` returns `["Hello world"]`. | Status: done
 
 - [ ] **Test custom splitter override** — When `splitSentences` is provided, it is used instead of the built-in splitter. | Status: not_done
 
@@ -252,15 +252,15 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 16: Unit Tests -- Queue State Machine
 
-- [ ] **Test idle -> playing -> idle transition** — Enqueue text, verify state goes to `playing`, wait for `ended`, verify state returns to `idle`. | Status: not_done
+- [x] **Test idle -> playing -> idle transition** — Enqueue text, verify state goes to `playing`, wait for `ended`, verify state returns to `idle`. | Status: done
 
-- [ ] **Test idle -> playing -> paused -> playing -> idle** — Enqueue, play, pause, resume, wait for ended. Verify all state transitions and `stateChange` events. | Status: not_done
+- [x] **Test idle -> playing -> paused -> playing -> idle** — Enqueue, play, pause, resume, wait for ended. Verify all state transitions and `stateChange` events. | Status: done
 
-- [ ] **Test playing -> idle on cancel** — Enqueue text, start playing, call `cancel()`, verify immediate transition to `idle`. | Status: not_done
+- [x] **Test playing -> idle on cancel** — Enqueue text, start playing, call `cancel()`, verify immediate transition to `idle`. | Status: done
 
-- [ ] **Test segment lifecycle** — Verify a single segment progresses through: `pending -> generating -> ready -> playing -> done`. | Status: not_done
+- [x] **Test segment lifecycle** — Verify a single segment progresses through: `pending -> generating -> ready -> playing -> done`. | Status: done
 
-- [ ] **Test cancel transitions all active segments to cancelled** — Enqueue multiple segments, cancel mid-playback, verify all non-done segments are `cancelled`. | Status: not_done
+- [x] **Test cancel transitions all active segments to cancelled** — Enqueue multiple segments, cancel mid-playback, verify all non-done segments are `cancelled`. | Status: done
 
 ---
 
@@ -358,26 +358,26 @@ This file tracks all implementation tasks derived from SPEC.md. Each task is gra
 
 ## Phase 23: `createQueue` Factory Function
 
-- [ ] **Implement `createQueue(options: QueueOptions): TTSQueue`** — Validate options, apply defaults, instantiate the `TTSQueue` class, call `provider.warmup()` if available, check format compatibility between provider and sink, and return the queue instance. | Status: not_done
+- [x] **Implement `createQueue(options: QueueOptions): TTSQueue`** — Validate options, apply defaults, instantiate the `TTSQueue` class, call `provider.warmup()` if available, check format compatibility between provider and sink, and return the queue instance. | Status: done
 
 ---
 
 ## Phase 24: Documentation
 
-- [ ] **Create README.md** — Write a comprehensive README with: package description, installation, quick start example, API reference (createQueue, TTSQueue methods, events), configuration options table, provider adapter examples (OpenAI, ElevenLabs), sink adapter examples, integration with `stream-tokens` and `voice-turn`, error handling guidance, and test utility usage. | Status: not_done
+- [x] **Create README.md** — Write a comprehensive README with: package description, installation, quick start example, API reference (createQueue, TTSQueue methods, events), configuration options table, provider adapter examples (OpenAI, ElevenLabs), sink adapter examples, integration with `stream-tokens` and `voice-turn`, error handling guidance, and test utility usage. | Status: done
 
 ---
 
 ## Phase 25: Package Configuration and Publishing Prep
 
-- [ ] **Update `package.json` version** — Bump version per semver (this is the initial implementation, so `0.1.0` may be appropriate or bump to `1.0.0` depending on readiness). | Status: not_done
+- [x] **Update `package.json` version** — Bump version per semver (this is the initial implementation, so `0.1.0` may be appropriate or bump to `1.0.0` depending on readiness). | Status: done
 
 - [ ] **Configure `package.json` exports** — Ensure main entry point (`dist/index.js`), types (`dist/index.d.ts`), and test utilities subpath (`tts-queue/test`) are properly configured in the `exports` field. | Status: not_done
 
-- [ ] **Verify `files` field** — Ensure `dist` directory is included in the published package. Ensure `src`, tests, and spec files are excluded. | Status: not_done
+- [x] **Verify `files` field** — Ensure `dist` directory is included in the published package. Ensure `src`, tests, and spec files are excluded. | Status: done
 
-- [ ] **Verify `engines` field** — Confirm `node: ">=18"` since the package uses `AbortController`, `EventEmitter`, and modern JS APIs. | Status: not_done
+- [x] **Verify `engines` field** — Confirm `node: ">=18"` since the package uses `AbortController`, `EventEmitter`, and modern JS APIs. | Status: done
 
-- [ ] **Verify zero runtime dependencies** — Confirm `dependencies` field in `package.json` is empty or absent. The package must have zero runtime dependencies per spec. | Status: not_done
+- [x] **Verify zero runtime dependencies** — Confirm `dependencies` field in `package.json` is empty or absent. The package must have zero runtime dependencies per spec. | Status: done
 
 - [ ] **Run full build and test** — Execute `npm run build`, `npm run test`, and `npm run lint`. All must pass with zero errors. | Status: not_done
