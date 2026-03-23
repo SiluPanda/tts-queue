@@ -233,10 +233,10 @@ export function createQueue(options: QueueOptions): TTSQueue {
     async pushImmediate(text: string): Promise<SegmentInfo[]> {
       if (closed) throw internalError('Queue is closed');
 
-      // Cancel any pending/in-flight segments
+      // Cancel any pending/in-flight/playing segments for immediate interruption
       for (const [id, entry] of allSegments.entries()) {
         const s = entry.info.state;
-        if (s === 'pending' || s === 'synthesizing' || s === 'synthesized') {
+        if (s === 'pending' || s === 'synthesizing' || s === 'synthesized' || s === 'playing') {
           entry.abortController.abort();
           const cancelled = transitionSegment(entry.info, 'cancelled');
           allSegments.set(id, { ...entry, info: cancelled });
@@ -333,16 +333,19 @@ export function createQueue(options: QueueOptions): TTSQueue {
           resolve();
           return;
         }
-        const onEmpty = () => {
+        const cleanup = () => {
           emitter.off('queue:empty', onEmpty);
+          emitter.off('state:change', onState);
+        };
+        const onEmpty = () => {
+          cleanup();
           resolve();
         };
         emitter.on('queue:empty', onEmpty);
         // Also listen for state change to idle
         const onState = (newState: QueueState) => {
           if (newState === 'idle') {
-            emitter.off('state:change', onState);
-            emitter.off('queue:empty', onEmpty);
+            cleanup();
             resolve();
           }
         };
