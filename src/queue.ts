@@ -23,6 +23,7 @@ export function createQueue(options: QueueOptions): TTSQueue {
   const splittingOpts = options.splitting ?? {};
   const minLength = splittingOpts.minChars ?? 10;
   const maxLength = splittingOpts.maxChars ?? 200;
+  const maxRetainedSegments = options.maxRetainedSegments ?? 1000;
 
   const emitter = new EventEmitter();
 
@@ -50,10 +51,39 @@ export function createQueue(options: QueueOptions): TTSQueue {
     (emitter.emit as any)(event, ...args);
   }
 
+  function isTerminalState(s: string): boolean {
+    return s === 'played' || s === 'failed' || s === 'cancelled';
+  }
+
+  function autoPrune(): void {
+    const terminalIds: string[] = [];
+    for (const [id, entry] of allSegments) {
+      if (isTerminalState(entry.info.state)) {
+        terminalIds.push(id);
+      }
+    }
+    if (terminalIds.length <= maxRetainedSegments) return;
+
+    // Sort by addedAt ascending so we remove the oldest first
+    terminalIds.sort((a, b) => {
+      const aTime = allSegments.get(a)!.info.addedAt.getTime();
+      const bTime = allSegments.get(b)!.info.addedAt.getTime();
+      return aTime - bTime;
+    });
+
+    const toRemove = terminalIds.length - maxRetainedSegments;
+    for (let i = 0; i < toRemove; i++) {
+      allSegments.delete(terminalIds[i]);
+    }
+  }
+
   function updateSegment(id: string, updated: SegmentInfo): void {
     const entry = allSegments.get(id);
     if (entry) {
       allSegments.set(id, { ...entry, info: updated });
+      if (isTerminalState(updated.state)) {
+        autoPrune();
+      }
     }
   }
 
@@ -151,7 +181,7 @@ export function createQueue(options: QueueOptions): TTSQueue {
       // Check if all segments are done
       if (state === 'playing' || state === 'draining') {
         const allDone = [...allSegments.values()].every(
-          e => e.info.state === 'played' || e.info.state === 'failed' || e.info.state === 'cancelled',
+          e => isTerminalState(e.info.state),
         );
         if (allDone && allSegments.size > 0) {
           emitEvent('queue:empty');
@@ -175,7 +205,7 @@ export function createQueue(options: QueueOptions): TTSQueue {
       if (pendingQueue.length === 0) {
         // Check if all are in terminal state
         const allDone = [...allSegments.values()].every(
-          e => e.info.state === 'played' || e.info.state === 'failed' || e.info.state === 'cancelled',
+          e => isTerminalState(e.info.state),
         );
         if (allDone) {
           emitEvent('queue:empty');
@@ -401,6 +431,17 @@ export function createQueue(options: QueueOptions): TTSQueue {
 
     getSegments(): SegmentInfo[] {
       return [...allSegments.values()].map(e => ({ ...e.info }));
+    },
+
+    purgeCompleted(): number {
+      let purged = 0;
+      for (const [id, entry] of allSegments) {
+        if (isTerminalState(entry.info.state)) {
+          allSegments.delete(id);
+          purged++;
+        }
+      }
+      return purged;
     },
 
     on<K extends keyof TTSQueueEvents>(event: K, listener: TTSQueueEvents[K]): void {

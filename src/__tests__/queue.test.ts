@@ -353,3 +353,74 @@ describe('createQueue — off()', () => {
     await queue.close();
   });
 });
+
+describe('createQueue — purgeCompleted()', () => {
+  it('removes all terminal segments from the map', async () => {
+    const queue = createQueue(makeOptions());
+    await queue.push('Hello there world. Second sentence here.');
+
+    await new Promise<void>((resolve) => {
+      if (queue.getState() === 'idle') { resolve(); return; }
+      queue.on('queue:empty', resolve);
+    });
+
+    const segsBefore = queue.getSegments();
+    expect(segsBefore.length).toBeGreaterThan(0);
+
+    const purged = queue.purgeCompleted();
+    expect(purged).toBe(segsBefore.length);
+
+    const segsAfter = queue.getSegments();
+    expect(segsAfter.length).toBe(0);
+
+    await queue.close();
+  });
+
+  it('returns 0 when no terminal segments exist', async () => {
+    const queue = createQueue(makeOptions());
+    const purged = queue.purgeCompleted();
+    expect(purged).toBe(0);
+    await queue.close();
+  });
+
+  it('resets stats after purge', async () => {
+    const queue = createQueue(makeOptions());
+    await queue.push('Hello there world. Second sentence here.');
+
+    await new Promise<void>((resolve) => {
+      if (queue.getState() === 'idle') { resolve(); return; }
+      queue.on('queue:empty', resolve);
+    });
+
+    expect(queue.getStats().totalSegments).toBeGreaterThan(0);
+
+    queue.purgeCompleted();
+
+    const stats = queue.getStats();
+    expect(stats.totalSegments).toBe(0);
+    expect(stats.completedSegments).toBe(0);
+    await queue.close();
+  });
+});
+
+describe('createQueue — auto-pruning with maxRetainedSegments', () => {
+  it('automatically prunes oldest terminal segments when limit is exceeded', async () => {
+    // Use a very small limit so we can test with few segments
+    const opts = makeOptions();
+    const queue = createQueue({ ...opts, maxRetainedSegments: 2 });
+
+    // Push enough text to create more than 2 segments
+    await queue.push('Hello there world. Second sentence here. Third sentence goes here. And a fourth one too.');
+
+    await new Promise<void>((resolve) => {
+      if (queue.getState() === 'idle') { resolve(); return; }
+      queue.on('queue:empty', resolve);
+    });
+
+    // The map should have been auto-pruned to at most maxRetainedSegments
+    const segs = queue.getSegments();
+    expect(segs.length).toBeLessThanOrEqual(2);
+
+    await queue.close();
+  });
+});

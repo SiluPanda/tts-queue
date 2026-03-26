@@ -71,6 +71,8 @@ export interface QueueOptions {
   splitting?: SplittingOptions;
   concurrency?: number;
   prefetchCount?: number;
+  /** Maximum number of terminal segments retained in the map. Oldest are pruned first. Default: 1000 */
+  maxRetainedSegments?: number;
   onSegmentStart?: (segment: SegmentInfo) => void;
   onSegmentEnd?: (segment: SegmentInfo) => void;
   onSegmentError?: (error: TTSQueueError, segment: SegmentInfo) => void;
@@ -114,6 +116,8 @@ export interface TTSQueue {
   getState(): QueueState;
   getStats(): QueueStats;
   getSegments(): SegmentInfo[];
+  /** Remove all terminal (played/failed/cancelled) segments from the internal map. Returns the number of segments purged. */
+  purgeCompleted(): number;
   on<K extends keyof TTSQueueEvents>(event: K, listener: TTSQueueEvents[K]): void;
   off<K extends keyof TTSQueueEvents>(event: K, listener: TTSQueueEvents[K]): void;
 }

@@ -36,6 +36,7 @@ const mockQueue: TTSQueue = {
     totalChars: 0,
   }),
   getSegments: () => [],
+  purgeCompleted: () => 0,
   on: <K extends keyof TTSQueueEvents>(_event: K, _listener: TTSQueueEvents[K]) => {},
   off: <K extends keyof TTSQueueEvents>(_event: K, _listener: TTSQueueEvents[K]) => {},
 };
